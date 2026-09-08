@@ -1,0 +1,8 @@
+{
+  "name": "Remix G-SYNC RW 26",
+  "description": "Aplikasi manajemen warga RW 26 untuk pencatatan iuran kas, ekspor laporan PDF bulanan, jadwal ronda siskamling malam, dan laporan kegiatan lingkungan secara digital.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

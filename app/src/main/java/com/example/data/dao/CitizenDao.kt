@@ -32,6 +32,9 @@ interface CitizenDao {
     @Update
     suspend fun updateCitizen(citizen: CitizenEntity)
 
+    @Query("UPDATE citizens SET isLocked = :isLocked WHERE id = :id")
+    suspend fun updateCitizenLockStatus(id: Long, isLocked: Boolean)
+
     @Delete
     suspend fun deleteCitizen(citizen: CitizenEntity)
 }

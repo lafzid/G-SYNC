@@ -20,9 +20,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -31,6 +36,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,19 +56,73 @@ import com.example.ui.theme.WarmAmberTertiary
 @Composable
 fun CitizenItemCard(
     citizen: CitizenEntity,
+    onToggleLock: (CitizenEntity) -> Unit,
     onDelete: (CitizenEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val isTetap = citizen.statusDomisili == "Tetap"
+    var showLockedAlert by remember { mutableStateOf(false) }
+
+    if (showLockedAlert) {
+        AlertDialog(
+            onDismissRequest = { showLockedAlert = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = BluePrimary,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Nama Warga Terkunci",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Text(
+                    text = "Data nama warga \"${citizen.name}\" saat ini berstatus terkunci untuk mengamankan data dan mencegah perubahan/penghapusan tidak sengaja. Buka kunci terlebih dahulu jika Anda ingin menghapus data warga ini.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onToggleLock(citizen)
+                        showLockedAlert = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text("Buka Kunci Sekarang")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showLockedAlert = false },
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text("Tutup")
+                }
+            }
+        )
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .testTag("citizen_card_${citizen.id}"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, CardBorderStroke),
+        colors = CardDefaults.cardColors(
+            containerColor = if (citizen.isLocked) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            if (citizen.isLocked) 1.5.dp else 1.dp,
+            if (citizen.isLocked) Color(0xFF93C5FD) else CardBorderStroke
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -73,30 +136,47 @@ fun CitizenItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier.weight(1f, fill = false),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .background(BluePrimary, CircleShape),
+                            .background(
+                                if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.surfaceVariant,
+                                CircleShape
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = if (citizen.isLocked) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
 
                     Column {
-                        Text(
-                            text = citizen.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = citizen.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            if (citizen.isLocked) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Data Terkunci",
+                                    tint = BluePrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -116,20 +196,54 @@ fun CitizenItemCard(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .background(
-                            if (isTetap) Color(0xFFDCFCE7) else Color(0xFFFEEFC3),
-                            RoundedCornerShape(20.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = citizen.statusDomisili,
-                        color = if (isTetap) StatusPaidColor else WarmAmberTertiary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Lock status badge
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (citizen.isLocked) Color(0xFFEFF6FF) else Color(0xFFF1F5F9),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (citizen.isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = null,
+                                tint = if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = if (citizen.isLocked) "Terkunci" else "Terbuka",
+                                color = if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    // Domisili badge
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (isTetap) Color(0xFFDCFCE7) else Color(0xFFFEEFC3),
+                                RoundedCornerShape(20.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = citizen.statusDomisili,
+                            color = if (isTetap) StatusPaidColor else WarmAmberTertiary,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
@@ -184,7 +298,32 @@ fun CitizenItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Lock / Unlock Button
+                    OutlinedButton(
+                        onClick = { onToggleLock(citizen) },
+                        shape = RoundedCornerShape(20.dp),
+                        border = BorderStroke(1.dp, if (citizen.isLocked) Color(0xFF93C5FD) else CardBorderStroke),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (citizen.isLocked) Color(0xFFEFF6FF) else Color.Transparent
+                        ),
+                        modifier = Modifier.testTag("toggle_lock_${citizen.id}")
+                    ) {
+                        Icon(
+                            imageVector = if (citizen.isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                            contentDescription = if (citizen.isLocked) "Buka Kunci" else "Kunci Nama",
+                            tint = if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (citizen.isLocked) "Terkunci" else "Kunci",
+                            color = if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (citizen.isLocked) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+
                     OutlinedButton(
                         onClick = {
                             val cleanNumber = citizen.phoneNumber.replace("-", "").replace(" ", "").replace("+", "")
@@ -199,10 +338,10 @@ fun CitizenItemCard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Chat,
                             contentDescription = null,
-                            modifier = Modifier.size(15.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("WhatsApp", style = MaterialTheme.typography.labelMedium)
+                        Text("WA", style = MaterialTheme.typography.labelMedium)
                     }
 
                     OutlinedButton(
@@ -216,23 +355,29 @@ fun CitizenItemCard(
                         Icon(
                             imageVector = Icons.Default.Phone,
                             contentDescription = null,
-                            modifier = Modifier.size(15.dp)
+                            modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Telepon", style = MaterialTheme.typography.labelMedium)
+                        Text("Telp", style = MaterialTheme.typography.labelMedium)
                     }
                 }
 
                 IconButton(
-                    onClick = { onDelete(citizen) },
+                    onClick = {
+                        if (citizen.isLocked) {
+                            showLockedAlert = true
+                        } else {
+                            onDelete(citizen)
+                        }
+                    },
                     modifier = Modifier
                         .size(34.dp)
                         .testTag("delete_citizen_${citizen.id}")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.DeleteOutline,
-                        contentDescription = "Hapus Data Warga",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        imageVector = if (citizen.isLocked) Icons.Default.Lock else Icons.Default.DeleteOutline,
+                        contentDescription = if (citizen.isLocked) "Data Terkunci (Tidak Dapat Dihapus)" else "Hapus Data Warga",
+                        tint = if (citizen.isLocked) BluePrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
                 }

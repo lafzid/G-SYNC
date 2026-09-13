@@ -29,6 +29,13 @@ class WargaRepository(
     suspend fun insertCitizen(citizen: CitizenEntity): Long = citizenDao.insertCitizen(citizen)
     suspend fun updateCitizen(citizen: CitizenEntity) = citizenDao.updateCitizen(citizen)
     suspend fun deleteCitizen(citizen: CitizenEntity) = citizenDao.deleteCitizen(citizen)
+    suspend fun toggleCitizenLock(citizen: CitizenEntity) {
+        val updated = citizen.copy(isLocked = !citizen.isLocked)
+        citizenDao.updateCitizen(updated)
+    }
+    suspend fun setCitizenLockStatus(id: Long, isLocked: Boolean) {
+        citizenDao.updateCitizenLockStatus(id, isLocked)
+    }
 
     // Dues
     val allDues: Flow<List<DuesEntity>> = duesDao.getAllDues()

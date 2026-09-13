@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
         RondaGroupEntity::class,
         RondaScheduleEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class WargaDatabase : RoomDatabase() {
@@ -67,16 +67,16 @@ abstract class WargaDatabase : RoomDatabase() {
 
         private suspend fun seedInitialData(db: WargaDatabase) {
             val citizens = listOf(
-                CitizenEntity(1, "Bpk. Bambang Sutrisno", "RT 01", "Blok A1 No. 04", "0812-8876-1234", 4, "Tetap"),
-                CitizenEntity(2, "Ibu Sri Wahyuni", "RT 01", "Blok A2 No. 08", "0813-1122-3344", 3, "Tetap"),
-                CitizenEntity(3, "Bpk. Hendra Gunawan", "RT 01", "Blok A3 No. 12", "0857-4455-6677", 5, "Tetap"),
-                CitizenEntity(4, "Bpk. Agus Santoso", "RT 02", "Blok B1 No. 02", "0812-9988-7766", 3, "Tetap"),
-                CitizenEntity(5, "Ibu Ratna Dewi", "RT 02", "Blok B2 No. 07", "0878-3344-5566", 2, "Kontrak"),
-                CitizenEntity(6, "Bpk. Dedi Kurniawan", "RT 02", "Blok B3 No. 15", "0813-7788-9900", 4, "Tetap"),
-                CitizenEntity(7, "Bpk. Joko Prasetyo", "RT 03", "Blok C1 No. 03", "0852-6677-8899", 4, "Tetap"),
-                CitizenEntity(8, "Ibu Siti Nurhaliza", "RT 03", "Blok C2 No. 11", "0819-2233-4455", 3, "Tetap"),
-                CitizenEntity(9, "Bpk. Rudi Hartono", "RT 04", "Blok D1 No. 05", "0812-3344-8899", 5, "Tetap"),
-                CitizenEntity(10, "Bpk. Ahmad Fauzi", "RT 04", "Blok D2 No. 14", "0877-5566-7788", 2, "Tetap")
+                CitizenEntity(1, "Bpk. Bambang Sutrisno", "RT 01", "Blok A1 No. 04", "0812-8876-1234", 4, "Tetap", isLocked = true),
+                CitizenEntity(2, "Ibu Sri Wahyuni", "RT 01", "Blok A2 No. 08", "0813-1122-3344", 3, "Tetap", isLocked = true),
+                CitizenEntity(3, "Bpk. Hendra Gunawan", "RT 01", "Blok A3 No. 12", "0857-4455-6677", 5, "Tetap", isLocked = false),
+                CitizenEntity(4, "Bpk. Agus Santoso", "RT 02", "Blok B1 No. 02", "0812-9988-7766", 3, "Tetap", isLocked = true),
+                CitizenEntity(5, "Ibu Ratna Dewi", "RT 02", "Blok B2 No. 07", "0878-3344-5566", 2, "Kontrak", isLocked = false),
+                CitizenEntity(6, "Bpk. Dedi Kurniawan", "RT 02", "Blok B3 No. 15", "0813-7788-9900", 4, "Tetap", isLocked = true),
+                CitizenEntity(7, "Bpk. Joko Prasetyo", "RT 03", "Blok C1 No. 03", "0852-6677-8899", 4, "Tetap", isLocked = false),
+                CitizenEntity(8, "Ibu Siti Nurhaliza", "RT 03", "Blok C2 No. 11", "0819-2233-4455", 3, "Tetap", isLocked = true),
+                CitizenEntity(9, "Bpk. Rudi Hartono", "RT 04", "Blok D1 No. 05", "0812-3344-8899", 5, "Tetap", isLocked = true),
+                CitizenEntity(10, "Bpk. Ahmad Fauzi", "RT 04", "Blok D2 No. 14", "0877-5566-7788", 2, "Tetap", isLocked = false)
             )
             db.citizenDao().insertCitizens(citizens)
 

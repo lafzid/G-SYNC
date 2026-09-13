@@ -73,6 +73,13 @@ class WargaViewModel(application: Application) : AndroidViewModel(application) {
     private val _citizenRtFilter = MutableStateFlow("Semua")
     val citizenRtFilter: StateFlow<String> = _citizenRtFilter.asStateFlow()
 
+    private val _citizenLockFilter = MutableStateFlow("Semua")
+    val citizenLockFilter: StateFlow<String> = _citizenLockFilter.asStateFlow()
+
+    fun setCitizenLockFilter(filter: String) {
+        _citizenLockFilter.value = filter
+    }
+
     private val _activityCategoryFilter = MutableStateFlow("Semua")
     val activityCategoryFilter: StateFlow<String> = _activityCategoryFilter.asStateFlow()
 
@@ -200,9 +207,18 @@ class WargaViewModel(application: Application) : AndroidViewModel(application) {
     // Filtered Citizens Flow
     val filteredCitizens: StateFlow<List<CitizenEntity>> = combine(
         allCitizens,
-        _citizenRtFilter
-    ) { citizens, rt ->
-        if (rt == "Semua") citizens else citizens.filter { it.rt == rt }
+        _citizenRtFilter,
+        _citizenLockFilter
+    ) { citizens, rt, lockFilter ->
+        citizens.filter { citizen ->
+            val matchRt = (rt == "Semua" || citizen.rt == rt)
+            val matchLock = when (lockFilter) {
+                "Terkunci" -> citizen.isLocked
+                "Terbuka" -> !citizen.isLocked
+                else -> true
+            }
+            matchRt && matchLock
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Filtered Activity Reports Flow
@@ -346,6 +362,12 @@ class WargaViewModel(application: Application) : AndroidViewModel(application) {
     fun addCitizen(citizen: CitizenEntity) {
         viewModelScope.launch {
             repository.insertCitizen(citizen)
+        }
+    }
+
+    fun toggleCitizenLock(citizen: CitizenEntity) {
+        viewModelScope.launch {
+            repository.toggleCitizenLock(citizen)
         }
     }
 

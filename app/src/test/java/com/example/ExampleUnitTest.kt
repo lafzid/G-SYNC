@@ -119,5 +119,20 @@ class ExampleUnitTest {
         assertEquals("Budi Santoso", filtered[0].citizenName)
         assertEquals(50000L, filtered.sumOf { it.amount })
     }
+
+    @Test
+    fun testCitizenLockStatus() {
+        val citizen = com.example.data.model.CitizenEntity(
+            id = 1L,
+            name = "Bpk. Bambang Sutrisno",
+            rt = "RT 01",
+            houseNumber = "Blok A1 No. 04",
+            phoneNumber = "0812-8876-1234",
+            isLocked = true
+        )
+        assertTrue(citizen.isLocked)
+        val unlocked = citizen.copy(isLocked = false)
+        org.junit.Assert.assertFalse(unlocked.isLocked)
+    }
 }
 

@@ -91,6 +91,7 @@ fun WargaMainScreen(
     val duesCategoryFilter by viewModel.duesCategoryFilter.collectAsStateWithLifecycle()
 
     val citizenRtFilter by viewModel.citizenRtFilter.collectAsStateWithLifecycle()
+    val citizenLockFilter by viewModel.citizenLockFilter.collectAsStateWithLifecycle()
     val activityCategoryFilter by viewModel.activityCategoryFilter.collectAsStateWithLifecycle()
     val activityStatusFilter by viewModel.activityStatusFilter.collectAsStateWithLifecycle()
 
@@ -381,7 +382,10 @@ fun WargaMainScreen(
                     CitizensScreen(
                         citizensList = filteredCitizens,
                         rtFilter = citizenRtFilter,
+                        lockFilter = citizenLockFilter,
                         onRtFilterChange = { rt -> viewModel.setCitizenRtFilter(rt) },
+                        onLockFilterChange = { filter -> viewModel.setCitizenLockFilter(filter) },
+                        onToggleLockCitizen = { citizen -> viewModel.toggleCitizenLock(citizen) },
                         onOpenAddCitizen = { viewModel.openAddCitizenDialog() },
                         onDeleteCitizen = { citizen -> viewModel.deleteCitizen(citizen) }
                     )

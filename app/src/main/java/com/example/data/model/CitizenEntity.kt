@@ -13,5 +13,6 @@ data class CitizenEntity(
     val phoneNumber: String,
     val familyMembersCount: Int = 3,
     val statusDomisili: String = "Tetap", // "Tetap", "Kontrak", "Kost"
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val isLocked: Boolean = false
 )

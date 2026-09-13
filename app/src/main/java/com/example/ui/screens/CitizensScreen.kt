@@ -7,16 +7,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,13 +47,18 @@ import com.example.ui.theme.CardBorderStroke
 fun CitizensScreen(
     citizensList: List<CitizenEntity>,
     rtFilter: String,
+    lockFilter: String,
     onRtFilterChange: (String) -> Unit,
+    onLockFilterChange: (String) -> Unit,
+    onToggleLockCitizen: (CitizenEntity) -> Unit,
     onOpenAddCitizen: () -> Unit,
     onDeleteCitizen: (CitizenEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val totalSouls = citizensList.sumOf { it.familyMembersCount }
+    val lockedCount = citizensList.count { it.isLocked }
     val rtList = listOf("Semua", "RT 01", "RT 02", "RT 03", "RT 04", "RT 05")
+    val lockOptions = listOf("Semua", "Terkunci", "Terbuka")
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -88,10 +98,10 @@ fun CitizensScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = "Direktori Warga & Rukun Tetangga (RT)",
+                            text = "Direktori Warga & Rukun Tetangga (RW 26)",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = BluePrimary
@@ -103,52 +113,121 @@ fun CitizensScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Kepala Keluarga Terdata",
+                                    text = "Kepala Keluarga",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "${citizensList.size} Kepala Keluarga",
+                                    text = "${citizensList.size} KK",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = BluePrimary
                                 )
                             }
 
-                            Column(horizontalAlignment = Alignment.End) {
+                            Column {
                                 Text(
                                     text = "Total Populasi",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "$totalSouls Jiwa Warga",
+                                    text = "$totalSouls Jiwa",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
+                            }
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "Status Kunci",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = null,
+                                        tint = BluePrimary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "$lockedCount Terkunci",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BluePrimary
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
 
-            // RT Filter Tabs
+            // RT and Lock Filter Tabs
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    rtList.forEach { rt ->
-                        FilterChip(
-                            selected = rtFilter == rt,
-                            onClick = { onRtFilterChange(rt) },
-                            shape = RoundedCornerShape(20.dp),
-                            label = { Text(rt, fontWeight = if (rtFilter == rt) FontWeight.Bold else FontWeight.Normal) }
-                        )
+                    // RT Filter
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rtList.forEach { rt ->
+                            FilterChip(
+                                selected = rtFilter == rt,
+                                onClick = { onRtFilterChange(rt) },
+                                shape = RoundedCornerShape(20.dp),
+                                label = { Text(rt, fontWeight = if (rtFilter == rt) FontWeight.Bold else FontWeight.Normal) }
+                            )
+                        }
+                    }
+
+                    // Lock Status Filter
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        lockOptions.forEach { option ->
+                            FilterChip(
+                                selected = lockFilter == option,
+                                onClick = { onLockFilterChange(option) },
+                                shape = RoundedCornerShape(20.dp),
+                                leadingIcon = {
+                                    when (option) {
+                                        "Terkunci" -> Icon(
+                                            imageVector = Icons.Default.Lock,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        "Terbuka" -> Icon(
+                                            imageVector = Icons.Default.LockOpen,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        else -> null
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = option,
+                                        fontWeight = if (lockFilter == option) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -183,10 +262,11 @@ fun CitizensScreen(
                     }
                 }
             } else {
-                items(citizensList) { citizen ->
+                items(citizensList, key = { it.id }) { citizen ->
                     Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                         CitizenItemCard(
                             citizen = citizen,
+                            onToggleLock = onToggleLockCitizen,
                             onDelete = onDeleteCitizen
                         )
                     }
